@@ -8,6 +8,7 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
+      - "v[0-9]+.[0-9]+.[0-9]+-saulo.[0-9]+"
   workflow_dispatch:
     inputs:
       release_tag:
@@ -39,8 +40,8 @@ jobs:
           REQUESTED_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
         run: |
           release_tag="$REQUESTED_TAG"
-          if [[ ! "$release_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Release tag must match vMAJOR.MINOR.PATCH" >&2
+          if [[ ! "$release_tag" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-saulo\.[0-9]+)?$ ]]; then
+            echo "Release tag must match vMAJOR.MINOR.PATCH or vMAJOR.MINOR.PATCH-saulo.N" >&2
             exit 1
           fi
 
@@ -50,7 +51,8 @@ jobs:
           fi
 
           version="${release_tag#v}"
-          major_minor="${version%.*}"
+          major_minor="${version%%-*}"
+          major_minor="${major_minor%.*}"
           tag_commit="$(git rev-list -n 1 "$release_tag")"
 
           {
