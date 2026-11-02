@@ -4,8 +4,8 @@ import { headers } from "next/headers";
 import { connection } from "next/server";
 import "./globals.css";
 import { ThemeProvider, THEME_INIT_SCRIPT } from "@/lib/theme";
-import { serverAdvertisedBaseUrl } from "@/lib/honcho/allowlist";
-import { DEFAULT_BASE_URL_META } from "@/lib/honcho/defaultTarget";
+import { serverAdvertisedBaseUrl, serverDefaultTokenManaged } from "@/lib/honcho/allowlist";
+import { DEFAULT_BASE_URL_META, DEFAULT_TOKEN_MANAGED_META } from "@/lib/honcho/defaultTarget";
 import { currentAuthConfig, hasValidSession } from "@/lib/auth/server";
 import { AuthRequiredProvider } from "@/components/AuthGate";
 
@@ -47,6 +47,7 @@ export default async function RootLayout({
   const auth = currentAuthConfig();
   const visible = !auth.enabled || (auth.ok && (await hasValidSession(await headers(), auth)));
   const defaultBaseUrl = visible ? serverAdvertisedBaseUrl() : null;
+  const tokenManaged = visible && serverDefaultTokenManaged();
   return (
     <html
       lang="en"
@@ -56,6 +57,7 @@ export default async function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         {defaultBaseUrl ? <meta name={DEFAULT_BASE_URL_META} content={defaultBaseUrl} /> : null}
+        {tokenManaged ? <meta name={DEFAULT_TOKEN_MANAGED_META} content="1" /> : null}
       </head>
       <body className="min-h-screen antialiased">
         <ThemeProvider>
